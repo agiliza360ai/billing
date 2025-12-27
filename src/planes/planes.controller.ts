@@ -10,7 +10,12 @@ export class PlanesController {
 
   @Post()
   create(@Body() createPlaneDto: CreatePlanDto) {
-    return this.planesService.create(createPlaneDto);
+    try {
+      const createdPlan = this.planesService.createPlan(createPlaneDto);
+      return createdPlan;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()

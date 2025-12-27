@@ -10,7 +10,7 @@ import { Plan, PlanDocument } from './entities/plan.entity';
 export class PlanesService {
   constructor(@InjectModel(Plan.name) private planModel: Model<PlanDocument>) {}
 
-  async create(createPlaneDto: CreatePlanDto): Promise<Plan> {
+  async createPlan(createPlaneDto: CreatePlanDto): Promise<Plan> {
     try {
       const createdPlan = new this.planModel(createPlaneDto);
       return createdPlan.save();
@@ -20,35 +20,27 @@ export class PlanesService {
   }
 
   async findAll(): Promise<Plan[]> {
-    try {
-      const foundPlanes = this.planModel.find().exec()
-      if (!foundPlanes) {
-        throw new NotFoundException({
-          status: 404,
-          message: "No se pudo encontrar ningun plan.",
-          error: "Not found"
-        });
-      }
-      return foundPlanes;
-    } catch (error) {
-      throw error;
+    const foundPlanes = this.planModel.find().exec()
+    if (!foundPlanes) {
+      throw new NotFoundException({
+        status: 404,
+        message: "No se pudo encontrar ningun plan.",
+        error: "Not found"
+      });
     }
+    return foundPlanes;
   }
 
   async findOne(id: string): Promise<Plan> {
-    try {
-      const foundPlan = await this.planModel.findById(id).exec();
-      if (!foundPlan) {
-        throw new NotFoundException({
-          status: 404,
-          message: `No se pudo encontrar el plan del id: ${id}`,
-          error: "Not found"
-        });
-      }
-      return foundPlan;
-    } catch (error) {
-      throw error;
+    const foundPlan = await this.planModel.findById(id).exec();
+    if (!foundPlan) {
+      throw new NotFoundException({
+        status: 404,
+        message: `No se pudo encontrar el plan del id: ${id}`,
+        error: "Not found"
+      });
     }
+    return foundPlan;
   }
 
   async update(id: string, updatePlaneDto: UpdatePlanDto): Promise<Plan> {

@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { PlanStatus } from 'src/types/plan';
 
 export interface Features {
   ai_agent: boolean;
