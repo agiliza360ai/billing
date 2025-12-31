@@ -1,6 +1,6 @@
 import { IsString, IsNumber, IsArray, IsObject, IsEnum, IsOptional, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PlanDuration, type PlanStatus } from "src/types/plan";
+import { PlanDuration, type PlanStatus } from "src/types/reponses";
 import type { Features } from "../entities/plan.entity";
 
 class FeaturesDto {

@@ -12,3 +12,9 @@ export interface DeletePlanResponse {
   message: string | string[];
   deletedCount: number;
 }
+
+export interface DeletePaymentResponse {
+  success: boolean;
+  message: string | string[];
+  deletedCount: number;
+}

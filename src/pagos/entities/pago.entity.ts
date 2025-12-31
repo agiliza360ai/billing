@@ -13,7 +13,11 @@ export class Pago extends Document {
   })
   brandId: string;
 
-  @Prop({ type: String, required: true, name: "suscription_id" })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    required: true,
+    name: "suscription_id"
+  })
   suscriptionId: string;
 
   @Prop({

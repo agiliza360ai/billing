@@ -31,51 +31,36 @@ export class PagosController {
     }
   }
 
-  // @Get()
-  // findPaymentOrAll(@Query('id') id?: string) {
-  //   try {
-  //     if (id) {
-  //       return this.pagosService.findPaymentById(id);
-  //     }
-  //     return this.pagosService.findAllPayments();
-  //   } catch (error) {
+  @Patch(":paymentId")
+  updatePayment(
+    @Param("paymentId") paymentId: string,
+    @Body() updatePagoDto: UpdatePagoDto
+  ) {
+    try {
+      return this.pagosService.findAndUpdateById(
+        paymentId,
+        updatePagoDto
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 
-  //   }
-  // }
+  @Delete("all")
+  removeAllPayments() {
+    try {
+      return this.pagosService.removeAllPayments();
+    } catch (error) {
+      throw error;
+    }
+  }
 
-  // @Get(":paymentId")
-  // findPaymentOrAll(@Param('id') id?: string) {
-  //   try {
-  //     if (id) {
-  //       return this.pagosService.findPaymentById(id);
-  //     }
-  //     return this.pagosService.findAllPayments();
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-  // @Post()
-  // create(@Body() createPagoDto: CreatePagoDto) {
-  //   return this.pagosService.create(createPagoDto);
-  // }
-
-  // @Get()
-  // findAll() {
-  //   return this.pagosService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.pagosService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePagoDto: UpdatePagoDto) {
-  //   return this.pagosService.update(+id, updatePagoDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.pagosService.remove(+id);
-  // }
+  @Delete(":paymentId")
+  removePayment(@Param("paymentId") paymentId: string) {
+    try {
+      return this.pagosService.removePaymentById(paymentId);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

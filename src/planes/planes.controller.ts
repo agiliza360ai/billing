@@ -36,9 +36,9 @@ export class PlanesController {
     }
   }
 
-  @Patch(':id')
+  @Patch(':planId')
   updatePlan(
-    @Param('id') id: string,
+    @Param('planId') id: string,
     @Body() updatePlaneDto: UpdatePlanDto
   ) {
     try {

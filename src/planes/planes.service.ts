@@ -5,7 +5,7 @@ import { UpdatePlanDto } from './dto/update-plan.dto';
 import { InjectModel } from "@nestjs/mongoose";
 import { DeleteResult, Model, Types } from "mongoose";
 import { Plan, PlanDocument } from './entities/plan.entity';
-import { DeletePlanResponse } from 'src/types/plan';
+import { DeletePlanResponse } from 'src/types/reponses';
 
 @Injectable()
 export class PlanesService {
@@ -51,7 +51,10 @@ export class PlanesService {
     return foundPlan;
   }
 
-  async findAndUpdateById(planId: string, updateData: UpdatePlanDto): Promise<Plan> {
+  async findAndUpdateById(
+    planId: string,
+    updateData: UpdatePlanDto
+  ): Promise<Plan> {
     if (!Types.ObjectId.isValid(planId)) {
       throw new NotFoundException({
         status: 404,
@@ -67,6 +70,7 @@ export class PlanesService {
         { new: true }
       )
       .exec();
+
     if (!updatedPlan) {
       throw new NotFoundException({
         status: 404,

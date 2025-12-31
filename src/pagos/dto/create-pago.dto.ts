@@ -1,14 +1,17 @@
 import { Transform } from "class-transformer";
 import { IsArray, IsDate, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { BrandExists } from "src/validators/brand-exists.validator";
+import { SuscripcionExists } from "src/validators/suscription-exists.validator";
 export class CreatePagoDto {
   @IsString()
+  @IsNotEmpty({ message: "El id de la marca es requerida" })
   @BrandExists({ message: "El brandId proporcionado no existe en la colección brands" })
   brandId: string;
 
   // @IsUUID()
   @IsString()
   @IsNotEmpty({ message: "El id de la suscripción es requerida" })
+  @SuscripcionExists({ message: "La suscriptionId no existe en la colección suscripcions" })
   suscriptionId: string;
 
   @IsNotEmpty({ message: "El tipo de pago es requerido" })
