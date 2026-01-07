@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { PlanesService } from './planes.service';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { CreatePlanDto } from './dto/create-plan.dto';
-import { DeletePlanDto } from './dto/delete-plan-dto';
 
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('planes')
 export class PlanesController {
   constructor(private readonly planesService: PlanesService) {}

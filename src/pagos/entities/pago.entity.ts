@@ -16,7 +16,8 @@ export class Pago extends Document {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     required: true,
-    name: "suscription_id"
+    name: "suscription_id",
+    ref: "Suscripcion"
   })
   suscriptionId: string;
 

@@ -129,7 +129,11 @@ export class SuscripcionesService {
     if (planId) return await this.getSuscriptionByPlanId(planId);
     if (brandId) return await this.getSuscriptionByBrandId(brandId);
 
-    const foundSuscriptions = await this.suscModel.find().exec();
+    const foundSuscriptions = await this.suscModel
+      .find()
+      .populate({ path: "brandId", select: "name" })
+      .populate({ path: "planId", select: "name" })
+      .exec();
     if (!foundSuscriptions || foundSuscriptions.length === 0) {
       throw new NotFoundException({
         status: 404,

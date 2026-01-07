@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException, UseGuards } from '@nestjs/common';
 import { SuscripcionesService } from './suscripciones.service';
 import { CreateSuscripcionDto } from './dto/create-suscripcion.dto';
 import { UpdateSuscripcionDto } from './dto/update-suscripcion.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('suscripciones')
 export class SuscripcionesController {
   constructor(private readonly suscService: SuscripcionesService) { }

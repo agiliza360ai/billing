@@ -8,6 +8,7 @@ import { Model, Types } from "mongoose";
 import { Pago, PagosDocument } from './entities/pago.entity';
 import { DeletePaymentResponse, ResponseGeneral } from 'src/types/reponses';
 import { CloudinaryService } from 'src/core/cloudinary/image.service';
+import path from 'path';
 
 @Injectable()
 export class PagosService {
@@ -26,7 +27,15 @@ export class PagosService {
   }
 
   async findAllPayments(): Promise<Pago[]> {
-    const foundPayments = await this.pagosModel.find().exec();
+    const foundPayments = await this.pagosModel
+      .find()
+      .populate({ path: 'brandId', select: 'name' })
+      .populate({
+        path: "suscriptionId",
+        select: "planId",
+        populate: { path: "planId", select: "name" }
+      })
+      .exec();
     if (!foundPayments || foundPayments.length === 0) {
       throw new NotFoundException({
         status: 404,

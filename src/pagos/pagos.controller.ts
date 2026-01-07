@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { PagosService } from './pagos.service';
 import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('pagos')
 export class PagosController {
   constructor(private readonly pagosService: PagosService) { }

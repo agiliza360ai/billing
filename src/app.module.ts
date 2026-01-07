@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { PlanesModule } from './planes/planes.module';
 import { PagosModule } from './pagos/pagos.module';
 import { SuscripcionesModule } from './suscripciones/suscripciones.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SuscripcionesModule } from './suscripciones/suscripciones.module';
       inject: [ConfigService],
     }),
     PlanesModule,
+    AuthModule,
     PagosModule,
     SuscripcionesModule,
   ],
