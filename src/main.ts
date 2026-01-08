@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import config from './core/config/environment';
-import { send } from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +21,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: config.panelAdmin,
+    // origin: config.panelAdmin,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
   });
