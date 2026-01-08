@@ -22,7 +22,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: config.panelAdmin,
+    // origin: config.panelAdmin,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
   });
