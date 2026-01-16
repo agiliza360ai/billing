@@ -29,7 +29,7 @@ async function bootstrap() {
   // });
 
   await app.listen(config.port, () => {
-    console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE!`);
+    console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
   });
 }
 
