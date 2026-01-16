@@ -21,12 +21,12 @@ async function bootstrap() {
     })
   );
 
-  // CORS deshabilitado
-  // app.enableCors({
-  //   origin: config.panelAdmin,
-  //   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  //   credentials: true
-  // });
+  // CORS habilitado sin restricciones de origen
+  app.enableCors({
+    origin: true, // Permite cualquier origen
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true
+  });
 
   await app.listen(config.port, () => {
     console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
