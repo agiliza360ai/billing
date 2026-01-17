@@ -18,6 +18,7 @@ export class CreatePlanDto {
   @IsNumber()
   price: number;
 
+  @IsString()
   currency_type: string;
 
   @IsEnum(PlanDuration)
