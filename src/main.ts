@@ -25,8 +25,9 @@ async function bootstrap() {
     })
   );
 
+  // CORS habilitado sin restricciones de origen
   app.enableCors({
-    // origin: config.panelAdmin,
+    origin: true, // Permite cualquier origen
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
   });
@@ -41,7 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup("api", app, document);
 
   await app.listen(config.port, () => {
-    logger.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE!`);
+    console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
   });
 }
 
