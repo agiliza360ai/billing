@@ -16,6 +16,9 @@ export class Plan extends Document  {
   @Prop({ required: true, type: Number })
   price: number;
 
+  @Prop({ required: true, type: String })
+  currency_type: string;
+
   @Prop({
     required: true,
     type: String,
