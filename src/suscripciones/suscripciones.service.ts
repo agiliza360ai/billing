@@ -131,8 +131,8 @@ export class SuscripcionesService {
 
     const foundSuscriptions = await this.suscModel
       .find()
-      .populate({ path: "brandId", select: "name" })
-      .populate({ path: "planId", select: "name" })
+      .populate({ path: "brandId", select: "name logo" })
+      .populate({ path: "planId", select: "name price" })
       .exec();
     if (!foundSuscriptions || foundSuscriptions.length === 0) {
       throw new NotFoundException({

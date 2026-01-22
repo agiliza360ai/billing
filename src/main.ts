@@ -42,7 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup("api", app, document);
 
   await app.listen(config.port, () => {
-    console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
+    logger.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
   });
 }
 

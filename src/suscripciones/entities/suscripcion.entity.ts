@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
+import { type Descuento } from "src/types/enums";
 
 export type SuscripcionDocument = Suscripcion & Document;
 
@@ -54,6 +55,12 @@ export class Suscripcion extends Document {
     required: true
   })
   status: string;
+
+  @Prop({
+    type: Object,
+    required: false
+  })
+  discount?: Descuento;
 }
 
 export const SuscripcionSchema = SchemaFactory.createForClass(Suscripcion);
