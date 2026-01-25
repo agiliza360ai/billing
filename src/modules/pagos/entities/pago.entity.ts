@@ -43,6 +43,9 @@ export class Pago extends Document {
   })
   voucher_pago: string | null;
 
+  @Prop({ type: Date, required: true })
+  fecha_pago: Date;
+
   @Prop({ type: [String] })
   notas: string[]
 
@@ -53,9 +56,6 @@ export class Pago extends Document {
     required: true
   })
   status: string;
-
-  @Prop({ type: Date, required: true })
-  fecha_pago: Date;
 }
 
 export const PagoSchema = SchemaFactory.createForClass(Pago);

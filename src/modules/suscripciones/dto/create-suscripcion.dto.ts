@@ -2,7 +2,7 @@ import { Transform, Type } from "class-transformer";
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, ValidateIf, ValidateNested, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator } from "class-validator";
 import { BrandExists } from "src/validators/brand-exists.validator";
 import { PlanExists } from "src/validators/plan-exists.validator";
-import { Descuento } from "src/types/enums";
+import { Descuento } from "../entities/suscripcion.entity";
 
 // Decorador personalizado para validar que solo una propiedad de descuento esté presente
 function OnlyOneDiscountType(validationOptions?: any) {

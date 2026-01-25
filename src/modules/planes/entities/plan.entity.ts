@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { PlanDuration } from 'src/types/enums';
 
 export interface Features {
   ai_agent: boolean;
@@ -22,10 +23,10 @@ export class Plan extends Document  {
   @Prop({
     required: true,
     type: String,
-    enum: ['monthly', 'annual', 'quarter', 'semester', 'biweekly'],
+    enum: PlanDuration,
     default: "monthly"
   })
-  duration: string;
+  duration: PlanDuration;
 
   @Prop({ type: [String], default: [] })
   modules_included: string[];

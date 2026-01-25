@@ -1,8 +1,27 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
-import { type Descuento } from "src/types/enums";
 
 export type SuscripcionDocument = Suscripcion & Document;
+
+export class Descuento {
+  @Prop({
+    type: Number,
+    required: false
+  })
+  percentage?: number;
+
+  @Prop({
+    type: Number,
+    required: false
+  })
+  fixed_amount?: number;
+
+  @Prop({
+    type: String,
+    required: false
+  })
+  description?: string;
+}
 
 @Schema({ timestamps: { createdAt: "created_at", updatedAt: "updated_at" } })
 export class Suscripcion extends Document {
@@ -49,18 +68,18 @@ export class Suscripcion extends Document {
   provider: string;
 
   @Prop({
+    type: Object,
+    required: false
+  })
+  discount?: Descuento;
+
+  @Prop({
     type: String,
     enum: ["activo", "inactivo"],
     default: "activo",
     required: true
   })
   status: string;
-
-  @Prop({
-    type: Object,
-    required: false
-  })
-  discount?: Descuento;
 }
 
 export const SuscripcionSchema = SchemaFactory.createForClass(Suscripcion);
