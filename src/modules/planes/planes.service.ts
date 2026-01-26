@@ -3,9 +3,9 @@ import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 
 import { InjectModel } from "@nestjs/mongoose";
-import { DeleteResult, Model, Types } from "mongoose";
+import { Model, Types } from "mongoose";
 import { Plan, PlanDocument } from './entities/plan.entity';
-import { DeletePlanResponse } from 'src/types/reponses';
+import { DeleteResponse } from 'src/types/reponses';
 
 @Injectable()
 export class PlanesService {
@@ -17,13 +17,9 @@ export class PlanesService {
   }
 
   async findAllPlans(): Promise<Plan[]> {
-    const foundPlanes = this.planModel.find().exec()
-    if (!foundPlanes) {
-      throw new NotFoundException({
-        status: 404,
-        message: "No se pudo encontrar ningun plan.",
-        error: "Not found"
-      });
+    const foundPlanes = await this.planModel.find().exec()
+    if (!foundPlanes || foundPlanes.length === 0) {
+      throw new NotFoundException("No se pudo encontrar ningun plan.");
     }
     return foundPlanes;
   }
@@ -42,11 +38,7 @@ export class PlanesService {
       .exec();
 
     if (!foundPlan) {
-      throw new NotFoundException({
-        status: 404,
-        message: `No se pudo encontrar el plan del id: ${planId}`,
-        error: "Not found"
-      });
+      throw new NotFoundException(`No se pudo encontrar el plan del id: ${planId}`);
     }
     return foundPlan;
   }
@@ -56,11 +48,7 @@ export class PlanesService {
     updateData: UpdatePlanDto
   ): Promise<Plan> {
     if (!Types.ObjectId.isValid(planId)) {
-      throw new NotFoundException({
-        status: 404,
-        message: `No se pudo encontrar el plan del id '${planId}' y por ende no se puede actualizar...`,
-        error: "Not found"
-      });
+      throw new NotFoundException(`No se pudo encontrar el plan del id '${planId}' y por ende no se puede actualizar...`);
     }
 
     const updatedPlan = await this.planModel
@@ -72,22 +60,14 @@ export class PlanesService {
       .exec();
 
     if (!updatedPlan) {
-      throw new NotFoundException({
-        status: 404,
-        message: `No se pudo encontrar el plan del id '${planId}' y por ende no se puede actualizar...`,
-        error: "Not found"
-      });
+      throw new NotFoundException(`No se pudo encontrar el plan del id '${planId}' y por ende no se puede actualizar...`);
     }
     return updatedPlan;
   }
 
   async removePlanById(planId: string): Promise<Plan> {
     if (!Types.ObjectId.isValid(planId)) {
-      throw new NotFoundException({
-        status: 404,
-        message: `No se pudo encontrar el plan con id '${planId}' y por ende no se puede eliminar...`,
-        error: "Not found"
-      });
+      throw new NotFoundException(`No se pudo encontrar el plan con id '${planId}' y por ende no se puede eliminar...`);
     }
 
     const removedPlan = await this.planModel
@@ -95,43 +75,23 @@ export class PlanesService {
       .exec();
 
     if (!removedPlan) {
-      throw new NotFoundException({
-        status: 404,
-        message: `No se pudo encontrar el plan con id '${planId}' y por ende no se puede eliminar...`,
-        error: "Not found"
-      });
+      throw new NotFoundException(`No se pudo encontrar el plan con id '${planId}' y por ende no se puede eliminar...`);
     }
     return removedPlan;
   }
 
-  async removeAllPlans(): Promise<DeletePlanResponse> {
+  async removeAllPlans(): Promise<DeleteResponse> {
     const { deletedCount } = await this.planModel.deleteMany().exec();
-    
     if (deletedCount === 0) {
-      const resultFailed: DeletePlanResponse = {
-        success: false,
-        message: "No se encontro ningun plan para eliminar",
-        deletedCount
-      }
-      return resultFailed;
+      throw new NotFoundException("No se pudo encontrar ningun plan para eliminar");
     }
-
-    const resultSuccesfully: DeletePlanResponse = {
-      success: true,
-      message: "Se pudieron eliminar todos los planes exitosamente",
-      deletedCount
-    }
-    return resultSuccesfully;
+    return { deletedCount };
   }
 
-  async removeManyPlansById(planIds: string[]): Promise<DeletePlanResponse> {
+  async removeManyPlansById(planIds: string[]): Promise<DeleteResponse> {
     console.log(planIds)
     if (!planIds || planIds.length === 0) {
-      throw new BadRequestException({
-        status: 400,
-        message: "Debe proporcionar al menos un ID para eliminar.",
-        error: "Bad Request"
-      });
+      throw new BadRequestException("Debe proporcionar al menos un ID para eliminar.");
     }
 
     const { deletedCount } = await this.planModel
@@ -143,22 +103,8 @@ export class PlanesService {
       .exec();
     
     if (deletedCount === 0) {
-      const resultFailed: DeletePlanResponse = {
-        success: false,
-        message: "No se encontro ningun plan para eliminar",
-        deletedCount
-      }
-      return resultFailed;
+      throw new NotFoundException("No se pudo encontrar ningun plan para eliminar");
     }
-
-    const resultSuccesfully: DeletePlanResponse = {
-      success: true,
-      message: [
-        "Se pudieron eliminar todos los planes exitosamente.",
-        `Planes eliminados: ${planIds.join(", ")}`,
-      ],
-      deletedCount
-    }
-    return resultSuccesfully;
+    return { deletedCount };
   }
 }
