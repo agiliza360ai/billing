@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
@@ -8,6 +8,8 @@ import { PagosModule } from './modules/pagos/pagos.module';
 import { SuscripcionesModule } from './modules/suscripciones/suscripciones.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OffersModule } from './modules/offers/offers.module';
+import { helmetConfig } from './core/config/helmet.config';
+import helmet from 'helmet';
 
 @Module({
   imports: [
@@ -31,4 +33,13 @@ import { OffersModule } from './modules/offers/offers.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(
+        helmet(helmetConfig),
+      )
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
