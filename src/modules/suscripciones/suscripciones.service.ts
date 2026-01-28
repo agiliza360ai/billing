@@ -8,13 +8,16 @@ import { Suscripcion, SuscripcionDocument } from './entities/suscripcion.entity'
 import { UpdateSuscripcionDto } from './dto/update-suscripcion.dto';
 import { PagosService } from '../pagos/pagos.service';
 import { PlanesService } from '../planes/planes.service';
+import { OffersService } from '../offers/offers.service';
+import { OfferExtraDurationType } from 'src/types/enums';
 
 @Injectable()
 export class SuscripcionesService {
   constructor(
     @InjectModel(Suscripcion.name) private suscModel: Model<SuscripcionDocument>,
     private readonly pagosService: PagosService,
-    private readonly planesService: PlanesService
+    private readonly planesService: PlanesService,
+    private readonly offersService: OffersService,
   ) { }
 
   async createSuscriptionToPlan(suscripcionData: CreateSuscripcionDto): Promise<Suscripcion> {
@@ -24,21 +27,36 @@ export class SuscripcionesService {
     // Calcular la fecha de inicio (por defecto: fecha actual)
     const startDate = suscripcionData.start_date || new Date();
 
-    // Calcular automáticamente la fecha de renovación basada en la duración del plan
-    let renovateDate: Date;
-    if (suscripcionData.renovate_date) {
-      // Si se proporciona manualmente, usar esa fecha
-      renovateDate = suscripcionData.renovate_date;
-    } else {
-      // Calcular basado en la duración del plan
-      renovateDate = this.calculateRenovateDate(startDate, plan.duration);
+    // Resolver oferta (si se envía)
+    let offerId: string | undefined;
+    let extraDuration: { amount: number; type: OfferExtraDurationType } | null = null;
+
+    if (suscripcionData.offerId) {
+      const foundOffer = await this.offersService.findOfferById(suscripcionData.offerId);
+      offerId = foundOffer._id.toString();
+      const extraAmount = Number(foundOffer.extra_duration_plan?.extra_duration || 0);
+      const extraType = foundOffer.extra_duration_plan?.duration_type as OfferExtraDurationType | undefined;
+      if (extraAmount > 0 && extraType) {
+        extraDuration = { amount: extraAmount, type: extraType };
+      }
+    }
+
+    // Calcular automáticamente la fecha de renovación basada en la duración del plan.
+    // Nota: aunque el cliente envíe `renovate_date`, el backend recalcula para evitar inconsistencias
+    // y luego aplica la oferta (si existe).
+    let renovateDate: Date = this.calculateRenovateDate(startDate, plan.duration);
+
+    // Aplicar duración extra de oferta (según unidad) encima de la duración base del plan
+    if (extraDuration) {
+      renovateDate = this.applyOfferExtraDuration(renovateDate, extraDuration);
     }
 
     // Crear la suscripción con la fecha de renovación calculada
     const suscripcionToSave = {
       ...suscripcionData,
       start_date: startDate,
-      renovate_date: renovateDate
+      renovate_date: renovateDate,
+      ...(offerId ? { offerId } : {}),
     };
 
     const createdSuscription = new this.suscModel(suscripcionToSave);
@@ -54,7 +72,7 @@ export class SuscripcionesService {
       status: "pendiente",
       fecha_pago: fechaPago,
       voucher_pago: "",
-      nota: []
+      notas: []
     }
 
     const tipoPago = suscripcionData.tipo_pago;
@@ -112,6 +130,42 @@ export class SuscripcionesService {
     return renovateDate;
   }
 
+  /**
+   * Aplica la duración extra de una oferta a una fecha.
+   * - days: suma N días
+   * - weeks: suma N * 7 días
+   * - months: suma N meses
+   * - years: suma N años
+   */
+  private applyOfferExtraDuration(
+    baseDate: Date,
+    extra: { amount: number; type: OfferExtraDurationType },
+  ): Date {
+    const d = new Date(baseDate);
+    const amount = Number(extra.amount || 0);
+    if (amount <= 0) return d;
+
+    switch (extra.type) {
+      case OfferExtraDurationType.DAYS:
+        d.setDate(d.getDate() + amount);
+        break;
+      case OfferExtraDurationType.WEEKS:
+        d.setDate(d.getDate() + amount * 7);
+        break;
+      case OfferExtraDurationType.MONTHS:
+        d.setMonth(d.getMonth() + amount);
+        break;
+      case OfferExtraDurationType.YEARS:
+        d.setFullYear(d.getFullYear() + amount);
+        break;
+      default:
+        // fallback seguro: días
+        d.setDate(d.getDate() + amount);
+        break;
+    }
+    return d;
+  }
+
   async getAllSuscriptions(
     planId?: string,
     brandId?: string
@@ -133,6 +187,7 @@ export class SuscripcionesService {
       .find()
       .populate({ path: "brandId", select: "name logo" })
       .populate({ path: "planId", select: "name price" })
+      .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" })
       .exec();
     if (!foundSuscriptions || foundSuscriptions.length === 0) {
       throw new NotFoundException({
@@ -154,7 +209,11 @@ export class SuscripcionesService {
       });
     }
 
-    const foundSuscription = await this.suscModel.findById(id);
+    const foundSuscription = await this.suscModel
+      .findById(id)
+      .populate({ path: "brandId", select: "name logo" })
+      .populate({ path: "planId", select: "name price" })
+      .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" });
     if (!foundSuscription || foundSuscription === null || undefined) {
       throw new NotFoundException({
         status: 404,
@@ -166,9 +225,11 @@ export class SuscripcionesService {
   }
 
   async getSuscriptionByPlanId(planId: string): Promise<Suscripcion | Suscripcion[]> {
-    const foundSuscription = await this.suscModel.find({
-      planId
-    });
+    const foundSuscription = await this.suscModel
+      .find({ planId })
+      .populate({ path: "brandId", select: "name logo" })
+      .populate({ path: "planId", select: "name price" })
+      .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" });
 
     if (!foundSuscription || foundSuscription === null || undefined) {
       throw new NotFoundException({
@@ -181,9 +242,11 @@ export class SuscripcionesService {
   }
 
   async getSuscriptionByBrandId(brandId: string): Promise<Suscripcion | Suscripcion[]> {
-    const foundSuscription = await this.suscModel.find({
-      brandId
-    });
+    const foundSuscription = await this.suscModel
+      .find({ brandId })
+      .populate({ path: "brandId", select: "name logo" })
+      .populate({ path: "planId", select: "name price" })
+      .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" });
     if (!foundSuscription || foundSuscription === null || undefined) {
       throw new NotFoundException({
         status: 404,

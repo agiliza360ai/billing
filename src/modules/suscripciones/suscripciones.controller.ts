@@ -27,7 +27,7 @@ export class SuscripcionesController {
   @ApiOperation({
     summary: 'Suscribirse a un plan',
     description:
-      'Crea una suscripción para una marca y un plan. Si no se envía `start_date`, se usa la fecha actual. Si no se envía `renovate_date`, se calcula según la duración del plan. Además, se registra automáticamente un pago asociado.',
+      'Crea una suscripción para una marca y un plan. `renovate_date` se recalcula automáticamente en backend según la duración del plan y luego se aplica la oferta (si envías `offerId`). Además, se registra automáticamente un pago asociado.',
   })
   @ApiBody({
     schema: {
@@ -36,11 +36,8 @@ export class SuscripcionesController {
         planId: '65f1c2d3e4f5a6b7c8d9e0f1',
         tipo_pago: 'transferencia',
         provider: 'BCP - Cuenta 123-456-789',
+        offerId: '65f1c2d3e4f5a6b7c8d9e0c3',
         status: 'activo',
-        discount: {
-          percentage: 10,
-          description: 'Descuento por lanzamiento',
-        },
       },
     },
   })

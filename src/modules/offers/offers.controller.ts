@@ -3,7 +3,7 @@ import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { JwtAuthGuard } from 'src/core/guards/jwt-auth.guard';
-import { ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ApiResponse } from 'src/core/responses/api-response';
 
 @UseGuards(JwtAuthGuard)
@@ -19,17 +19,23 @@ export class OffersController {
     schema: {
       example: {
         offer_name: "Oferta de prueba",
-        extra_duration_plan: 1,
-        descripcion: "Oferta de prueba",
+        extra_duration_plan: { extra_duration: 12, duration_type: "months" },
+        description: "12 meses adicionales al plan",
         status: "active",
       },
       properties: {
         offer_name: { type: "string" },
-        extra_duration_plan: { type: "number" },
-        descripcion: { type: "string" },
+        extra_duration_plan: {
+          type: "object",
+          properties: {
+            extra_duration: { type: "number" },
+            duration_type: { type: "string", enum: ["days", "weeks", "months", "years"] }
+          }
+        },
+        description: { type: "string" },
         status: { type: "string" },
       },
-      required: ["offer_name", "extra_duration_plan", "status"],
+      required: ["offer_name", "status"],
     }
   })
   @ApiCreatedResponse({
@@ -68,6 +74,16 @@ export class OffersController {
       example: {
         type: "1",
         message: "Ofertas encontradas correctamente",
+        statusCode: 200,
+        data: [
+          {
+            _id: '65f1c2d3e4f5a6b7c8d9e0c3',
+            offer_name: "Oferta de prueba",
+            extra_duration_plan: 1,
+            descripcion: "Oferta de prueba",
+            status: "active",
+          },
+        ],
       }
     }
   })
@@ -80,28 +96,178 @@ export class OffersController {
       return ApiResponse.error(error);
     }
   }
-  // @Post()
-  // createOffer(@Body() createOfferDto: CreateOfferDto) {
-  //   return this.offersService.create(createOfferDto);
-  // }
 
-  // @Get()
-  // findAllOffers() {
-  //   return this.offersService.findAll();
-  // }
+  @ApiOperation({
+    summary: "Obtener una oferta por ID",
+    description: "Retorna el detalle de una oferta por su `offerId`.",
+  })
+  @ApiParam({
+    name: 'offerId',
+    description: 'ID de la oferta (Mongo ObjectId).',
+    example: '65f1c2d3e4f5a6b7c8d9e0c3',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        type: "1",
+        message: "Oferta encontrada correctamente",
+        statusCode: 200,
+        data: {
+          _id: '65f1c2d3e4f5a6b7c8d9e0c3',
+          offer_name: "Oferta de prueba",
+          extra_duration_plan: 1,
+          descripcion: "Oferta de prueba",
+          status: "active",
+        },
+      },
+    }
+  })
+  @ApiNotFoundResponse({
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "No se pudo encontrar la oferta con id: 65f1c2d3e4f5a6b7c8d9e0c3",
+        error: "Not Found",
+      }
+    }
+  })
+  @Get(':offerId')
+  async findOfferById(@Param('offerId') offerId: string) {
+    try {
+      const foundOffer = await this.offersService.findOfferById(offerId);
+      return ApiResponse.success("Oferta encontrada correctamente", foundOffer);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
 
-  // @Get(':id')
-  // findOfferById(@Param('id') id: string) {
-  //   return this.offersService.findOne(+id);
-  // }
+  @ApiOperation({
+    summary: "Actualizar una oferta por ID",
+    description: "Actualiza parcialmente una oferta. Solo envía los campos a modificar.",
+  })
+  @ApiParam({
+    name: 'offerId',
+    description: 'ID de la oferta (Mongo ObjectId).',
+    example: '65f1c2d3e4f5a6b7c8d9e0c3',
+  })
+  @ApiBody({
+    schema: {
+      example: {
+        offer_name: "Oferta de prueba",
+        extra_duration_plan: 1,
+        descripcion: "Oferta de prueba",
+        status: "active",
+      },
+    }
+  })
+  @ApiCreatedResponse({
+    schema: {
+      example: {
+        type: "1",
+        message: "Oferta actualizada correctamente",
+        statusCode: 200,
+        data: {
+          _id: '65f1c2d3e4f5a6b7c8d9e0c3',
+          offer_name: "Oferta de prueba",
+          extra_duration_plan: 1,
+          descripcion: "Oferta de prueba",
+          status: "active",
+        },
+      }
+    }
+  })
+  @ApiNotFoundResponse({
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "No se pudo encontrar la oferta con id: 65f1c2d3e4f5a6b7c8d9e0c3",
+      }
+    }
+  })
+  @Patch(':offerId/update-offer')
+  async updateOfferById(@Param('offerId') offerId: string, @Body() updateOfferDto: UpdateOfferDto) {
+    try {
+      const updatedOffer = await this.offersService.updateOfferById(offerId, updateOfferDto);
+      return ApiResponse.success("Oferta actualizada correctamente", updatedOffer);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
 
-  // @Patch(':id')
-  // updateOffer(@Param('id') id: string, @Body() updateOfferDto: UpdateOfferDto) {
-  //   return this.offersService.update(+id, updateOfferDto);
-  // }
+  @ApiOperation({
+    summary: "Eliminar una oferta por ID",
+    description: "Elimina una oferta específica por su `offerId` y retorna el documento eliminado.",
+  })
+  @ApiParam({
+    name: 'offerId',
+    description: 'ID de la oferta (Mongo ObjectId).',
+    example: '65f1c2d3e4f5a6b7c8d9e0c3',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        type: "1",
+        message: "Oferta eliminada correctamente",
+        statusCode: 200,
+        data: {
+          _id: '65f1c2d3e4f5a6b7c8d9e0c3',
+          offer_name: "Oferta de prueba",
+          extra_duration_plan: 1,
+          descripcion: "Oferta de prueba",
+          status: "active",
+        },
+      }
+    }
+  })
+  @ApiNotFoundResponse({
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "No se pudo encontrar la oferta con id: 65f1c2d3e4f5a6b7c8d9e0c3",
+        error: "Not Found",
+      }
+    }
+  })
+  @Delete(':offerId/delete-offer')
+  async removeOfferById(@Param('offerId') offerId: string) {
+    try {
+      const removedOffer = await this.offersService.removeOfferById(offerId);
+      return ApiResponse.success("Oferta eliminada correctamente", removedOffer);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
 
-  // @Delete(':id')
-  // removeOffer(@Param('id') id: string) {
-  //   return this.offersService.remove(+id);
-  // }
+  @ApiOperation({
+    summary: "Eliminar todas las ofertas",
+    description: "Elimina todas las ofertas existentes y retorna cuántas fueron eliminadas.",
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        type: "1",
+        message: "Ofertas eliminadas correctamente",
+        statusCode: 200,
+        data: { deletedCount: 10 },
+      }
+    }
+  })
+  @ApiNotFoundResponse({
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "No se pudo encontrar ninguna oferta para eliminar",
+        error: "Not Found",
+      }
+    }
+  })
+  @Delete('delete-all-offers')
+  async removeAllOffers() {
+    try {
+      const deletedOffers = await this.offersService.removeAllOffers();
+      return ApiResponse.success("Ofertas eliminadas correctamente", deletedOffers);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
 }

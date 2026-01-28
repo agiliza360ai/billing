@@ -7,3 +7,22 @@ export enum PlanDuration {
   SEMESTER = "semester",
   BIWEEKLY = "biweekly" // Plan quincenal
 }
+
+export enum SuscriptionStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  EXPIRED = "expired",
+  CANCELED = "canceled",
+}
+
+export enum OfferStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+}
+
+export enum OfferExtraDurationType {
+  DAYS = "days",
+  WEEKS = "weeks",
+  MONTHS = "months",
+  YEARS = "years",
+}
