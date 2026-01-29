@@ -9,7 +9,7 @@ import {
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from 'mongoose';
-import { Plan, PlanDocument } from "src/planes/entities/plan.entity";
+import { Plan, PlanDocument } from "src/modules/planes/entities/plan.entity";
 
 @ValidatorConstraint({ name: "PlanExists", async: true })
 @Injectable()

@@ -1,16 +1,9 @@
-export interface DeletePlanResponse {
-  success: boolean;
-  message: string | string[];
+export interface DeleteResponse {
   deletedCount: number;
 }
 
-export interface DeletePaymentResponse {
-  success: boolean;
-  message: string | string[];
-  deletedCount: number;
-}
 
-export interface ResponseGeneral {
-  success: boolean;
-  message: string;
+export interface DeleteVoucherResponse {
+  deleteVoucher: boolean;
+  voucherUrl: string;
 }

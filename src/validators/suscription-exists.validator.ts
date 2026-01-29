@@ -10,7 +10,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from 'mongoose';
 
-import { Suscripcion, SuscripcionDocument } from "src/suscripciones/entities/suscripcion.entity";
+import { Suscripcion, SuscripcionDocument } from "src/modules/suscripciones/entities/suscripcion.entity";
 
 export class SuscripcionExistsConstraint implements ValidatorConstraintInterface {
   constructor(@InjectModel(Suscripcion.name) private suscModel: Model<SuscripcionDocument>) { }
