@@ -35,7 +35,7 @@ export class ExtraDurationPlanDto {
   extra_duration: number;
 
   @IsEnum(OfferExtraDurationType, {
-    message: "El tipo de duracion extra debe ser: 'days', 'weeks', 'months' o 'years'"
+    message: "El tipo de duracion extra debe ser: 'days', 'weeks' o 'months'"
   })
   @IsNotEmpty({ message: "El tipo de duracion extra es requerido" })
   duration_type: OfferExtraDurationType;

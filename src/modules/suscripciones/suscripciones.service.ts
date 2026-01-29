@@ -155,9 +155,6 @@ export class SuscripcionesService {
       case OfferExtraDurationType.MONTHS:
         d.setMonth(d.getMonth() + amount);
         break;
-      case OfferExtraDurationType.YEARS:
-        d.setFullYear(d.getFullYear() + amount);
-        break;
       default:
         // fallback seguro: días
         d.setDate(d.getDate() + amount);
