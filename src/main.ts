@@ -39,10 +39,10 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, configDocument);
-  SwaggerModule.setup("api", app, document);
+  SwaggerModule.setup("api/docs", app, document);
 
   await app.listen(config.port, () => {
-    console.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
+    logger.log(`BILLING ESTÁ ESCUCHANDO EL PUERTO ${config.port} CORRECTAMENTE`);
   });
 }
 

@@ -1,0 +1,48 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { PlanDuration } from 'src/types/enums';
+
+export interface Features {
+  ai_agent: boolean;
+  priority_support: boolean;
+}
+
+export type PlanDocument = Plan & Document;
+
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+export class Plan extends Document  {
+  @Prop({ required: true })
+  name: string;
+
+  @Prop({ required: true, type: Number })
+  price: number;
+
+  @Prop({ required: true, type: String })
+  currency_type: string;
+
+  @Prop({
+    required: true,
+    type: String,
+    enum: PlanDuration,
+    default: "monthly"
+  })
+  duration: PlanDuration;
+
+  @Prop({ type: [String], default: [] })
+  modules_included: string[];
+
+  @Prop({ required: true, type: Number })
+  order_limit: number;
+
+  @Prop({ type: Object, required: true })
+  features: Features;
+
+  @Prop({ 
+    type: String, 
+    enum: ['active', 'inactive'], 
+    default: 'active'
+  })
+  status: string;
+}
+
+export const PlanSchema = SchemaFactory.createForClass(Plan);
