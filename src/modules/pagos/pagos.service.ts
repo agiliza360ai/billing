@@ -17,7 +17,13 @@ export class PagosService {
   ) { }
 
   async registerPayment(registerData: CreatePagoDto): Promise<Pago> {
-    const registedPayment = new this.pagosModel(registerData);
+    // Convertir brandId y suscriptionId a ObjectId para asegurar compatibilidad con MongoDB
+    const paymentData = {
+      ...registerData,
+      brandId: new Types.ObjectId(registerData.brandId),
+      suscriptionId: new Types.ObjectId(registerData.suscriptionId),
+    };
+    const registedPayment = new this.pagosModel(paymentData);
     return registedPayment.save();
   }
 
