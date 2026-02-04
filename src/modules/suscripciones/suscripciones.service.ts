@@ -51,12 +51,19 @@ export class SuscripcionesService {
       renovateDate = this.applyOfferExtraDuration(renovateDate, extraDuration);
     }
 
+    // Convertir brandId y planId a ObjectId para asegurar compatibilidad con MongoDB
+    const brandIdObjectId = new Types.ObjectId(suscripcionData.brandId);
+    const planIdObjectId = new Types.ObjectId(suscripcionData.planId);
+    const offerIdObjectId = offerId ? new Types.ObjectId(offerId) : undefined;
+
     // Crear la suscripción con la fecha de renovación calculada
     const suscripcionToSave = {
       ...suscripcionData,
+      brandId: brandIdObjectId,
+      planId: planIdObjectId,
       start_date: startDate,
       renovate_date: renovateDate,
-      ...(offerId ? { offerId } : {}),
+      ...(offerIdObjectId ? { offerId: offerIdObjectId } : {}),
     };
 
     const createdSuscription = new this.suscModel(suscripcionToSave);
@@ -67,7 +74,7 @@ export class SuscripcionesService {
     const fechaPago = startDate;
 
     const pago = {
-      brandId: suscripcionData.brandId,
+      brandId: brandIdObjectId, // Usar el ObjectId convertido
       suscriptionId: savedSuscription._id.toString(),
       status: "pendiente",
       fecha_pago: fechaPago,
@@ -222,8 +229,18 @@ export class SuscripcionesService {
   }
 
   async getSuscriptionByPlanId(planId: string): Promise<Suscripcion | Suscripcion[]> {
+    // Validar y convertir planId a ObjectId
+    if (!Types.ObjectId.isValid(planId)) {
+      throw new NotFoundException({
+        status: 404,
+        message: `PlanId inválido: ${planId}`,
+        error: "Not found"
+      });
+    }
+    const planIdObjectId = new Types.ObjectId(planId);
+
     const foundSuscription = await this.suscModel
-      .find({ planId })
+      .find({ planId: planIdObjectId })
       .populate({ path: "brandId", select: "name logo" })
       .populate({ path: "planId", select: "name price" })
       .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" });
@@ -239,8 +256,18 @@ export class SuscripcionesService {
   }
 
   async getSuscriptionByBrandId(brandId: string): Promise<Suscripcion | Suscripcion[]> {
+    // Validar y convertir brandId a ObjectId
+    if (!Types.ObjectId.isValid(brandId)) {
+      throw new NotFoundException({
+        status: 404,
+        message: `BrandId inválido: ${brandId}`,
+        error: "Not found"
+      });
+    }
+    const brandIdObjectId = new Types.ObjectId(brandId);
+
     const foundSuscription = await this.suscModel
-      .find({ brandId })
+      .find({ brandId: brandIdObjectId })
       .populate({ path: "brandId", select: "name logo" })
       .populate({ path: "planId", select: "name price" })
       .populate({ path: "offerId", select: "offer_name description discount extra_duration_plan status" });
@@ -329,8 +356,18 @@ export class SuscripcionesService {
   }
 
   async removeSuscriptionsByPlanId(planId: string) {
+    // Validar y convertir planId a ObjectId
+    if (!Types.ObjectId.isValid(planId)) {
+      throw new NotFoundException({
+        status: 404,
+        message: `PlanId inválido: ${planId}`,
+        error: "Not found"
+      });
+    }
+    const planIdObjectId = new Types.ObjectId(planId);
+
     const deletedResult = await this.suscModel.deleteMany({
-      planId
+      planId: planIdObjectId
     });
 
     if (!deletedResult) {
@@ -344,8 +381,18 @@ export class SuscripcionesService {
   }
 
   async removeSuscriptionsByBrandId(brandId: string): Promise<DeleteResult> {
+    // Validar y convertir brandId a ObjectId
+    if (!Types.ObjectId.isValid(brandId)) {
+      throw new NotFoundException({
+        status: 404,
+        message: `BrandId inválido: ${brandId}`,
+        error: "Not found"
+      });
+    }
+    const brandIdObjectId = new Types.ObjectId(brandId);
+
     const deletedResult = await this.suscModel.deleteMany({
-      brandId
+      brandId: brandIdObjectId
     });
     if (!deletedResult) {
       throw new NotFoundException({
