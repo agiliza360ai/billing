@@ -12,7 +12,12 @@ export class PlanesService {
   constructor(@InjectModel(Plan.name) private planModel: Model<PlanDocument>) { }
 
   async createPlan(createPlaneDto: CreatePlanDto): Promise<Plan> {
-    const createdPlan = new this.planModel(createPlaneDto);
+    // Si unlimited_orders está activado, establecer order_limit a un valor prácticamente infinito
+    const planData = { ...createPlaneDto };
+    if (planData.features?.unlimited_orders === true) {
+      planData.order_limit = Number.POSITIVE_INFINITY as number;
+    }
+    const createdPlan = new this.planModel(planData);
     return createdPlan.save();
   }
 
@@ -51,10 +56,18 @@ export class PlanesService {
       throw new NotFoundException(`No se pudo encontrar el plan del id '${planId}' y por ende no se puede actualizar...`);
     }
 
+    // Si se está actualizando unlimited_orders a true, establecer order_limit automáticamente
+    const updatePayload = { ...updateData };
+    
+    // Si se actualiza features y unlimited_orders es true, establecer order_limit a infinito
+    if (updatePayload.features?.unlimited_orders === true) {
+      updatePayload.order_limit = Number.POSITIVE_INFINITY as number;
+    }
+
     const updatedPlan = await this.planModel
       .findByIdAndUpdate(
         planId,
-        updateData,
+        updatePayload,
         { new: true }
       )
       .exec();
