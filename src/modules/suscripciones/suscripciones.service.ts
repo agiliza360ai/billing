@@ -51,19 +51,14 @@ export class SuscripcionesService {
       renovateDate = this.applyOfferExtraDuration(renovateDate, extraDuration);
     }
 
-    // Convertir brandId y planId a ObjectId para asegurar compatibilidad con MongoDB
-    const brandIdObjectId = new Types.ObjectId(suscripcionData.brandId);
-    const planIdObjectId = new Types.ObjectId(suscripcionData.planId);
-    const offerIdObjectId = offerId ? new Types.ObjectId(offerId) : undefined;
-
     // Crear la suscripción con la fecha de renovación calculada
     const suscripcionToSave = {
       ...suscripcionData,
-      brandId: brandIdObjectId,
-      planId: planIdObjectId,
+      brandId: suscripcionData.brandId,
+      planId: suscripcionData.planId,
       start_date: startDate,
       renovate_date: renovateDate,
-      ...(offerIdObjectId ? { offerId: offerIdObjectId } : {}),
+      ...(offerId ? { offerId: offerId } : {}),
     };
 
     const createdSuscription = new this.suscModel(suscripcionToSave);
@@ -74,7 +69,7 @@ export class SuscripcionesService {
     const fechaPago = startDate;
 
     const pago = {
-      brandId: brandIdObjectId, // Usar el ObjectId convertido
+      brandId: suscripcionData.brandId,
       suscriptionId: savedSuscription._id.toString(),
       status: "pendiente",
       fecha_pago: fechaPago,

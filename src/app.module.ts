@@ -20,7 +20,7 @@ import helmet from 'helmet';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB'),
-        dbName: 'servicios-generales-prod',
+        dbName: configService.get<string>('DB_NAME'),
       }),
       inject: [ConfigService],
     }),
