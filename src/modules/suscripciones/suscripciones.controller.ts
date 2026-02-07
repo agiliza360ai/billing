@@ -16,6 +16,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ApiResponse } from 'src/core/responses/api-response';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -71,12 +72,12 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Post("suscribe-to-plan")
-  suscribeToPlan(@Body() suscripcionData: CreateSuscripcionDto) {
+  async suscribeToPlan(@Body() suscripcionData: CreateSuscripcionDto) {
     try {
-      const createdSuscription = this.suscService.createSuscriptionToPlan(suscripcionData);
-      return createdSuscription;
+      const createdSuscription = await this.suscService.createSuscriptionToPlan(suscripcionData);
+      return ApiResponse.success('Suscripción creada correctamente', createdSuscription);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 
@@ -138,17 +139,18 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Get()
-  findAllSuscriptions(
+  async findAllSuscriptions(
     @Query("planId") planId?: string,
     @Query("brandId") brandId?: string,
   ) {
     try {
-      return this.suscService.getAllSuscriptions(
+      const suscriptions = await this.suscService.getAllSuscriptions(
         planId,
         brandId
       );
+      return ApiResponse.success('Suscripciones encontradas correctamente', suscriptions);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 
@@ -189,11 +191,12 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Get(":suscriptionId")
-  findSuscriptionById(@Param("suscriptionId") suscriptionId: string) {
+  async  findSuscriptionById(@Param("suscriptionId") suscriptionId: string) {
     try {
-      return this.suscService.getSuscriptionById(suscriptionId);
+      const suscription = await this.suscService.getSuscriptionById(suscriptionId);
+      return ApiResponse.success('Suscripción encontrada correctamente', suscription);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 
@@ -239,17 +242,18 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Patch(":suscriptionId/update-suscription")
-  updateSuscription(
+  async updateSuscription(
     @Param("suscriptionId") suscId: string,
     @Body() updateData: UpdateSuscripcionDto
   ) {
     try {
-      return this.suscService.findAndUpdateSuscriptionById(
+      const updatedSuscription = await this.suscService.findAndUpdateSuscriptionById(
         suscId,
         updateData
       );
+      return ApiResponse.success('Suscripción actualizada correctamente', updatedSuscription);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 
@@ -286,17 +290,18 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Delete("delete-all-suscriptions")
-  removeAllSuscriptions(
+  async removeAllSuscriptions(
     @Query("planId") planId?: string,
     @Query("brandId") brandId?: string,
   ) {
     try {
-      return this.suscService.removeAllSuscriptions(
+      const deletedSuscriptions = await this.suscService.removeAllSuscriptions(
         planId,
         brandId
       );
+      return ApiResponse.success('Suscripciones eliminadas correctamente', deletedSuscriptions);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 
@@ -331,11 +336,12 @@ export class SuscripcionesController {
     schema: { example: { statusCode: 401, message: 'Unauthorized' } },
   })
   @Delete(":suscriptionId/delete-suscription")
-  removeSuscription(@Param("suscriptionId") suscId: string) {
+  async removeSuscription(@Param("suscriptionId") suscId: string) {
     try {
-      return this.suscService.removeSuscriptionById(suscId);
+      const deletedSuscription = await this.suscService.removeSuscriptionById(suscId);
+      return ApiResponse.success('Suscripción eliminada correctamente', deletedSuscription);
     } catch (error) {
-      throw error;
+      return ApiResponse.error(error);
     }
   }
 }
