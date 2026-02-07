@@ -18,6 +18,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import paymentOptions from './options/paymentOptions';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -138,6 +139,35 @@ export class PagosController {
     try {
       const foundPayments = await this.pagosService.findAllPayments();
       return ApiResponse.success('Pagos encontrados correctamente', foundPayments);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
+
+  @ApiOperation({
+    summary: 'Obtener opciones de pago',
+    description: 'Retorna las opciones de pago disponibles.',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        type: '1',
+        message: 'Opciones de pago encontradas correctamente',
+        statusCode: 200,
+        data: paymentOptions,
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
+  })
+  @Get("payment-options")
+  async getPaymentOptions() {
+    try {
+      return ApiResponse.success(
+        'Opciones de pago encontradas correctamente',
+        paymentOptions
+      );
     } catch (error) {
       return ApiResponse.error(error);
     }
@@ -441,4 +471,46 @@ export class PagosController {
       return ApiResponse.error(error);
     }
   }
+
+  @ApiOperation({
+    summary: 'Eliminar pagos por brandId',
+    description: 'Elimina todos los pagos asociados a una marca por su `brandId` y retorna cuántos fueron eliminados.',
+  })
+  @ApiParam({
+    name: 'brandId',
+    description: 'ID de la marca (Mongo ObjectId).',
+    example: '65f1c2d3e4f5a6b7c8d9e0a1',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        type: '1',
+        message: 'Pagos eliminados correctamente',
+        statusCode: 200,
+        data: { deletedCount: 10 },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'No se pudo encontrar ningun pago para eliminar',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
+  })
+  @Delete("brands/:brandId/delete-payments")
+  async removePaymentByBrandId(@Param("brandId") brandId: string) {
+    try {
+      const deletedPayments = await this.pagosService.findPaymentByBrandIdAndDelete(brandId);
+      return ApiResponse.success('Pagos eliminados correctamente', deletedPayments);
+    } catch (error) {
+      return ApiResponse.error(error);
+    }
+  }
+
 }

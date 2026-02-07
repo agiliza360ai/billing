@@ -51,6 +51,29 @@ export class PagosService {
     return foundPayment;
   }
 
+  async findPaymentByBrandIdAndDelete(brandId: string): Promise<DeleteResponse> {
+    // Validar y convertir brandId a ObjectId
+    if (!Types.ObjectId.isValid(brandId)) {
+      throw new NotFoundException(`BrandId inválido: ${brandId}`);
+    }
+    const brandIdObjectId = new Types.ObjectId(brandId);
+    
+    const { deletedCount } = await this.pagosModel.deleteMany({ brandId: brandIdObjectId }).exec();
+    return { deletedCount };
+  }
+
+  async findPaymentBySuscriptionIdAndDelete(suscriptionId: string): Promise<DeleteResponse> {
+    // Validar y convertir suscriptionId a ObjectId
+    if (!Types.ObjectId.isValid(suscriptionId)) {
+      // No lanzar excepción, solo retornar 0 eliminados si el ID es inválido
+      return { deletedCount: 0 };
+    }
+    const suscriptionIdObjectId = new Types.ObjectId(suscriptionId);
+    
+    const { deletedCount } = await this.pagosModel.deleteMany({ suscriptionId: suscriptionIdObjectId }).exec();
+    return { deletedCount };
+  }
+
   async findAndUpdateById(
     paymentId: string,
     updateData: UpdatePagoDto

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateSuscripcionDto } from './dto/create-suscripcion.dto';
 
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,6 +13,8 @@ import { OfferExtraDurationType } from 'src/types/enums';
 
 @Injectable()
 export class SuscripcionesService {
+  private readonly logger = new Logger(SuscripcionesService.name);
+
   constructor(
     @InjectModel(Suscripcion.name) private suscModel: Model<SuscripcionDocument>,
     private readonly pagosService: PagosService,
@@ -51,19 +53,14 @@ export class SuscripcionesService {
       renovateDate = this.applyOfferExtraDuration(renovateDate, extraDuration);
     }
 
-    // Convertir brandId y planId a ObjectId para asegurar compatibilidad con MongoDB
-    const brandIdObjectId = new Types.ObjectId(suscripcionData.brandId);
-    const planIdObjectId = new Types.ObjectId(suscripcionData.planId);
-    const offerIdObjectId = offerId ? new Types.ObjectId(offerId) : undefined;
-
     // Crear la suscripción con la fecha de renovación calculada
     const suscripcionToSave = {
       ...suscripcionData,
-      brandId: brandIdObjectId,
-      planId: planIdObjectId,
+      brandId: suscripcionData.brandId,
+      planId: suscripcionData.planId,
       start_date: startDate,
       renovate_date: renovateDate,
-      ...(offerIdObjectId ? { offerId: offerIdObjectId } : {}),
+      ...(offerId ? { offerId: offerId } : {}),
     };
 
     const createdSuscription = new this.suscModel(suscripcionToSave);
@@ -74,7 +71,7 @@ export class SuscripcionesService {
     const fechaPago = startDate;
 
     const pago = {
-      brandId: brandIdObjectId, // Usar el ObjectId convertido
+      brandId: suscripcionData.brandId,
       suscriptionId: savedSuscription._id.toString(),
       status: "pendiente",
       fecha_pago: fechaPago,
@@ -318,6 +315,20 @@ export class SuscripcionesService {
     if (brandId) return await this.removeSuscriptionsByBrandId(brandId);
     if (planId) return await this.removeSuscriptionsByPlanId(planId);
 
+    // Primero obtener todas las suscripciones que se van a eliminar para eliminar sus pagos
+    const suscriptionsToDelete = await this.suscModel.find().exec();
+
+    // Eliminar los pagos asociados a cada suscripción
+    for (const suscription of suscriptionsToDelete) {
+      try {
+        await this.pagosService.findPaymentBySuscriptionIdAndDelete(suscription._id.toString());
+        this.logger.log(`Pago(s) eliminado(s) para la suscripción: ${suscription._id}`);
+      } catch (error) {
+        this.logger.warn(`No se encontró pago para la suscripción ${suscription._id}: ${error.message}`);
+      }
+    }
+
+    // Ahora eliminar todas las suscripciones
     const deletedResult = await this.suscModel
       .deleteMany()
       .exec();
@@ -341,6 +352,24 @@ export class SuscripcionesService {
       });
     }
 
+    // Primero obtener la suscripción para tener acceso a sus datos antes de eliminarla
+    const suscriptionToDelete = await this.suscModel.findById(suscId).exec();
+
+    if (!suscriptionToDelete) {
+      throw new NotFoundException({
+        status: 404,
+        message: `No se pudo encontrar la suscripción con id '${suscId}' y por ende no se puede eliminar...`,
+        error: "Not found"
+      });
+    }
+
+    const deletedPayments = await this.pagosService.findPaymentBySuscriptionIdAndDelete(suscId);
+    if (!deletedPayments) {
+      this.logger.warn(`No se encontró pago para la suscripción ${suscId}`);
+    }
+    this.logger.log(`Pago(s) eliminado(s) para la suscripción: ${suscId}`);
+
+    // Ahora eliminar la suscripción
     const removedSuscription = await this.suscModel
       .findByIdAndDelete(suscId)
       .exec();
@@ -352,6 +381,9 @@ export class SuscripcionesService {
         error: "Not found"
       });
     }
+
+    this.logger.log(`Suscripción eliminada: ${suscId}`);
+
     return removedSuscription;
   }
 
@@ -366,6 +398,22 @@ export class SuscripcionesService {
     }
     const planIdObjectId = new Types.ObjectId(planId);
 
+    // Primero obtener todas las suscripciones que se van a eliminar para eliminar sus pagos
+    const suscriptionsToDelete = await this.suscModel.find({
+      planId: planIdObjectId
+    }).exec();
+
+    // Eliminar los pagos asociados a cada suscripción
+    for (const suscription of suscriptionsToDelete) {
+
+      const deletedPayments = await this.pagosService.findPaymentBySuscriptionIdAndDelete(suscription._id.toString());
+      if (!deletedPayments) {
+        this.logger.warn(`No se encontró pago para la suscripción ${suscription._id}`);
+      }
+      this.logger.log(`Pago(s) eliminado(s) para la suscripción: ${suscription._id}`);
+    }
+
+    // Ahora eliminar las suscripciones
     const deletedResult = await this.suscModel.deleteMany({
       planId: planIdObjectId
     });
@@ -391,6 +439,22 @@ export class SuscripcionesService {
     }
     const brandIdObjectId = new Types.ObjectId(brandId);
 
+    // Primero obtener todas las suscripciones que se van a eliminar para eliminar sus pagos
+    const suscriptionsToDelete = await this.suscModel.find({
+      brandId: brandIdObjectId
+    }).exec();
+
+    // Eliminar los pagos asociados a cada suscripción
+    for (const suscription of suscriptionsToDelete) {
+      try {
+        await this.pagosService.findPaymentBySuscriptionIdAndDelete(suscription._id.toString());
+        this.logger.log(`Pago(s) eliminado(s) para la suscripción: ${suscription._id}`);
+      } catch (error) {
+        this.logger.warn(`No se encontró pago para la suscripción ${suscription._id}: ${error.message}`);
+      }
+    }
+
+    // Ahora eliminar las suscripciones
     const deletedResult = await this.suscModel.deleteMany({
       brandId: brandIdObjectId
     });
